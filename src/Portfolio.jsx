@@ -137,6 +137,28 @@ const Portfolio = () => {
     sectionRefs.current[id] = el;
   };
 
+  // Malinis na URL (/about, /projects) sa halip na #about
+  const goTo = (e, id) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth" });
+    window.history.pushState(null, "", `/${id}`);
+  };
+
+  // Kapag direktang binuksan ang /projects (o Back/Forward button), pumunta sa tamang section
+  useEffect(() => {
+    if (loading) return;
+    const scrollToPath = () => {
+      const id = window.location.pathname.replace("/", "");
+      if (id && id !== "home") document.getElementById(id)?.scrollIntoView();
+      else window.scrollTo({ top: 0 });
+    };
+    if (window.location.pathname !== "/") scrollToPath();
+    window.addEventListener("popstate", scrollToPath);
+    return () => window.removeEventListener("popstate", scrollToPath);
+  }, [loading]);
+
   const designTools = [
     { name: "Adobe XD", icon: "adobexd" },
     { name: "Figma", icon: "figma" },
@@ -144,13 +166,13 @@ const Portfolio = () => {
   ];
 
   const navLinks = [
-    { label: "Home", href: "#home" },
-    { label: "About", href: "#about" },
-    { label: "Skills", href: "#skills" },
-    { label: "Services", href: "#services" },
-    { label: "Projects", href: "#projects" },
-    { label: "Certifications", href: "#certifications" },
-    { label: "Contact", href: "#contact" },
+    { label: "Home", href: "/home" },
+    { label: "About", href: "/about" },
+    { label: "Skills", href: "/skills" },
+    { label: "Services", href: "/services" },
+    { label: "Projects", href: "/projects" },
+    { label: "Certifications", href: "/certifications" },
+    { label: "Contact", href: "/contact" },
   ];
 
   const skills = [
@@ -231,7 +253,7 @@ const Portfolio = () => {
 
       {/* ── NAVBAR ── */}
       <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-        <a href="#home" className="logo">
+        <a href="/home" className="logo" onClick={(e) => goTo(e, "home")}>
           <div>
             <div className="logo-mark">&lt;K/&gt;</div>
             <span className="logo-tag">portfolio</span>
@@ -244,6 +266,7 @@ const Portfolio = () => {
               <a
                 href={link.href}
                 className={activeSection === link.label.toLowerCase() ? "active" : ""}
+                onClick={(e) => goTo(e, link.href.slice(1))}
               >
                 {link.label}
               </a>
@@ -268,7 +291,7 @@ const Portfolio = () => {
             key={link.label}
             href={link.href}
             className={activeSection === link.label.toLowerCase() ? "active" : ""}
-            onClick={() => setMenuOpen(false)}
+            onClick={(e) => { goTo(e, link.href.slice(1)); setMenuOpen(false); }}
           >
             {link.label}
           </a>
@@ -294,7 +317,7 @@ const Portfolio = () => {
                 Passionate about turning ideas into real digital products.
               </p>
               <div className="hero-btns">
-                <a href="#projects" className="btn-primary">View Projects</a>
+                <a href="/projects" className="btn-primary" onClick={(e) => goTo(e, "projects")}>View Projects</a>
                 <a href="/Kelvin-Bautista-CV.pdf" download="Kelvin-Bautista-CV.pdf" className="btn-outline">Download CV</a>
               </div>
             </div>
@@ -594,7 +617,10 @@ const Portfolio = () => {
       {/* ── BACK TO TOP ── */}
       <button
         className={`back-to-top ${showTop ? "show" : ""}`}
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        onClick={() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          window.history.pushState(null, "", "/home");
+        }}
         aria-label="Back to top"
         title="Back to top"
       >
